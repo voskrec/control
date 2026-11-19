@@ -1,89 +1,137 @@
-# 1. Считываем данные
-n = int(input("Введите N: "))
-# Превращаем строку с числами в список целых чисел
-a = list(map(int, input("Введите числа через пробел: ").split()))
+text = input("Введите текст (можно несколько предложений): ")
 
-print("\n--- РЕЗУЛЬТАТЫ ---")
+words = text.split()
+a= "аеёиоуыэюяaeiouy"
 
-# 2. Поиск пиков и впадин
-peaks = []    # Список для пиков
-valleys = []  # Список для впадин
+c_g = 0  
+c_c = 0 
 
-# Если чисел меньше 3, искать соседей невозможно
-if n < 3:
-    print("Пики и впадины: слишком мало чисел (N < 3)")
-else:
-    # Идем от 1 до n-2, чтобы у числа были и левый (i-1), и правый (i+1) сосед
-    for i in range(1, n - 1):
-        if a[i] > a[i-1] and a[i] > a[i+1]:
-            peaks.append(a[i])  # Это пикЫ
-        elif a[i] < a[i-1] and a[i] < a[i+1]:
-            valleys.append(a[i]) # Это впадина
-    print("Пики:", peaks)
-    print("Впадины:", valleys)
+for i in words:
+    # Берем первую букву, делаем маленькой
+    first= i[0].lower()
+    
+    # Если это буква (а не кавычка или другой символ)
+    if first.isalpha():
+        if first in a:
+            c_g += 1
+        else:
+            c_c += 1
 
-# 3. Сумма четных и произведение нечетных позиций
-sum = 0
-prod = 1
+print(f"\n1. Слов с гласной: {c_g}, а с согласной: {c_c}")
 
-for i in range(n):
-    position = i + 1  # Позиция считается с 1, а индекс i с 0
-    if position % 2 == 0: # Если позиция четная (2, 4, 6...)
-        sum= sum+ a[i]
-    else:                 # Если позиция нечетная (1, 3, 5...)
-        prod_odd = prod* a[i]
+#самое частое слово
+clean_words = []
+for word in words:
+    clean_w = ""
+    for char in word:
+        if char.isalpha():
+            clean_w += char.lower()
+    if clean_w != "":
+        clean_words.append(clean_w)
 
-print("Сумма на четных позициях:", sum)
-print("Произведение на нечетных позициях:", prod)
+# Ищем самое частое слово (двойной цикл)
+most_common_word = ""
+max_count = 0
 
-# 4. Арифметическая прогрессия (3 числа подряд)
-has_progression = False # Флаг: нашли или нет
-
-if n < 3:
-    print("Арифметическая прогрессия: слишком мало чисел (N < 3)")
-else:
-    # Берем три числа: i, i+1, i+2
-    for i in range(n - 2):
-        # Проверяем, одинаковая ли разность
-        if a[i+1] - a[i] == a[i+2] - a[i+1]:
-            has_progression = True
-            break # Нашли, дальше можно не искать
+for i in range(len(clean_words)):
+    current_word = clean_words[i]
+    current_count = 0
+    
+    # Считаем, сколько раз текущее слово встречается в списке
+    for w in clean_words:
+        if w == current_word:
+            current_count += 1
             
-    if has_progression:
-        print("Арифметическая прогрессия длины >= 3: Да")
-    else:
-        print("Арифметическая прогрессия длины >= 3: Нет")
+    if current_count > max_count:
+        max_count = current_count
+        most_common_word = current_word
 
-# 5. Новый список (сумма с соседями)
-new_a = []
-for i in range(n):
-    total = a[i] # Сначала берем само число
-    if i > 0:    # Если есть сосед слева
-        total = total + a[i-1]
-    if i < n - 1: # Если есть сосед справа
-        total = total + a[i+1]
-    new_a.append(total)
+print(f"2. Самое частое слово: '{most_common_word}' (встречается {max_count} раз)")
 
-print("Новый список:", new_a)
+#удаляем повторяющиеся символы
+compressed_text = ""
+if len(text) > 0:
+    compressed_text = text[0] # Первый символ оставляем всегда
+    for i in range(1, len(text)):
+        # Если текущий символ не равен предыдущему — добавляем его
+        if text[i] != text[i-1]:
+            compressed_text += text[i]
 
-# 6. Медиана и отклонения
-# Для медианы нужен отсортированный список
-sorted_a = sorted(a) 
+print(f"3. После сжатия повторов: \"{compressed_text}\"")
+#проверяем на анаграмму
+second_text = input("\nВведите вторую строку для проверки анаграммы: ")
 
-if n % 2 == 1: # Если N нечетное
-    median = sorted_a[n // 2] # Берем ровно середину
-else:          # Если N четное
-    mid1 = sorted_a[n // 2 - 1]
-    mid2 = sorted_a[n // 2]
-    median = (mid1 + mid2) / 2.0 # Берем среднее двух середин
+# Очищаем обе строки от всего, кроме букв (и делаем маленькими)
+clean_text1 = ""
+for char in text:
+    if char.isalpha():
+        clean_text1 += char.lower()
 
-print("Медиана:", median)
+clean_text2 = ""
+for char in second_text:
+    if char.isalpha():
+        clean_text2 += char.lower()
 
-# Считаем отклонения
-count_dev = 0
-for x in a:
-    # abs() - это модуль числа (убирает минус)
-    if abs(x - median) > 10:
-        count_dev = count_dev + 1
+# Сортируем буквы (sorted превращает строку в список и сортирует)
+sorted_text1 = sorted(clean_text1)
+sorted_text2 = sorted(clean_text2)
 
-print("Элементов, отклоняющихся от медианы > 10:", count_dev)
+if sorted_text1 == sorted_text2:
+    print("4. Строки являются анаграммами.")
+else:
+    print("4. Строки НЕ являются анаграммами.")
+#извлекаем текст из ковычек
+quotes_list = []
+inside_quotes = False # Флаг: мы внутри кавычек или нет
+current_quote = ""
+
+for char in text:
+    # Если встретили открывающую кавычку (обычную или «)
+    if (char == '"' or char == '«') and inside_quotes == False:
+        inside_quotes = True
+        current_quote = "" # Начинаем собирать текст заново
+    # Если встретили закрывающую кавычку (обычную или »)
+    elif (char == '"' or char == '»') and inside_quotes == True:
+        inside_quotes = False
+        quotes_list.append(current_quote)
+    # Если мы внутри кавычек, добавляем символ к тексту
+    elif inside_quotes == True:
+        current_quote += char
+
+print(f"5. Текст в кавычках: {quotes_list}")
+#ищем быков и коров
+print("\n--- 6. Игра 'Быки и коровы' ---")
+secret = input("Введите первое слово: ")
+guess = input("Введите второе слово: ")
+
+if len(secret) != len(guess):
+    print("Ошибка: слова должны быть одинаковой длины!")
+else:
+    secret = secret.lower()
+    guess = guess.lower()
+    
+    bulls = 0
+    cows = 0
+    
+    # Превращаем строки в списки, чтобы можно было "вычеркивать" буквы
+    secret_list = list(secret)
+    guess_list = list(guess)
+    
+    # 1. Ищем БЫКОВ (буква на своем месте)
+    for i in range(len(secret_list)):
+        if secret_list[i] == guess_list[i]:
+            bulls += 1
+            # Заменяем найденные буквы на '_', чтобы не считать их снова
+            secret_list[i] = '_'
+            guess_list[i] = '_'
+            
+    # 2. Ищем КОРОВ (буква есть, но не на своем месте)
+    for i in range(len(guess_list)):
+        if guess_list[i] != '_': # Если эта буква не была быком
+            if guess_list[i] in secret_list:
+                cows += 1
+                # Находим индекс этой буквы в секретном слове и зачеркиваем её
+                index_in_secret = secret_list.index(guess_list[i])
+                secret_list[index_in_secret] = '_'
+                
+    print(f"Быки={bulls}, Коровы={cows}")
