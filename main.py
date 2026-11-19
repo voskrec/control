@@ -1,137 +1,97 @@
-text = input("Введите текст (можно несколько предложений): ")
+# 1. Ввод и создание матрицы
+R = int(input("Строк: "))
+C = int(input("Столбцов: "))
 
-words = text.split()
-a= "аеёиоуыэюяaeiouy"
+matrix = []
+num = 1
+for i in range(R):
+    row = []
+    for j in range(C):
+        row.append(num)
+        num += 1
+    matrix.append(row)
 
-c_g = 0  
-c_c = 0 
+print("\nМатрица:")
+for row in matrix:
+    print(row)
 
-for i in words:
-    # Берем первую букву, делаем маленькой
-    first= i[0].lower()
-    
-    # Если это буква (а не кавычка или другой символ)
-    if first.isalpha():
-        if first in a:
-            c_g += 1
-        else:
-            c_c += 1
+# 2. Сумма и произведение строк/столбцов
+print("\nСуммы и произведения:")
+for i in range(R):
+    s, p = 0, 1
+    for j in range(C):
+        s += matrix[i][j]
+        p *= matrix[i][j]
+    print("Строка", i+1, "Сумма:", s, "Произв:", p)
 
-print(f"\n1. Слов с гласной: {c_g}, а с согласной: {c_c}")
+for j in range(C):
+    s, p = 0, 1
+    for i in range(R):
+        s += matrix[i][j]
+        p *= matrix[i][j]
+    print("Столбец", j+1, "Сумма:", s, "Произв:", p)
 
-#самое частое слово
-clean_words = []
-for word in words:
-    clean_w = ""
-    for char in word:
-        if char.isalpha():
-            clean_w += char.lower()
-    if clean_w != "":
-        clean_words.append(clean_w)
+# 3. Максимальная сумма
+max_sum, max_i = 0, 0
+for i in range(R):
+    s = sum(matrix[i]) # Встроенная функция sum() - это просто
+    if s > max_sum:
+        max_sum, max_i = s, i
 
-# Ищем самое частое слово (двойной цикл)
-most_common_word = ""
-max_count = 0
+max_c_sum, max_c_i = 0, 0
+for j in range(C):
+    s = 0
+    for i in range(R):
+        s += matrix[i][j]
+    if s > max_c_sum:
+        max_c_sum, max_c_i = s, j
 
-for i in range(len(clean_words)):
-    current_word = clean_words[i]
-    current_count = 0
-    
-    # Считаем, сколько раз текущее слово встречается в списке
-    for w in clean_words:
-        if w == current_word:
-            current_count += 1
-            
-    if current_count > max_count:
-        max_count = current_count
-        most_common_word = current_word
+print("\nМакс. сумма в строке:", max_i+1, "| в столбце:", max_c_i+1)
 
-print(f"2. Самое частое слово: '{most_common_word}' (встречается {max_count} раз)")
+# 4. Меняем местами строки и столбцы
+matrix[0], matrix[R-1] = matrix[R-1], matrix[0] # Строки
 
-#удаляем повторяющиеся символы
-compressed_text = ""
-if len(text) > 0:
-    compressed_text = text[0] # Первый символ оставляем всегда
-    for i in range(1, len(text)):
-        # Если текущий символ не равен предыдущему — добавляем его
-        if text[i] != text[i-1]:
-            compressed_text += text[i]
+for i in range(R): # Столбцы
+    matrix[i][0], matrix[i][C-1] = matrix[i][C-1], matrix[i][0]
 
-print(f"3. После сжатия повторов: \"{compressed_text}\"")
-#проверяем на анаграмму
-second_text = input("\nВведите вторую строку для проверки анаграммы: ")
+print("\nПосле замены краев:")
+for row in matrix:
+    print(row)
 
-# Очищаем обе строки от всего, кроме букв (и делаем маленькими)
-clean_text1 = ""
-for char in text:
-    if char.isalpha():
-        clean_text1 += char.lower()
+# 5. Транспонирование
+transposed = []
+for j in range(C):
+    new_row = []
+    for i in range(R):
+        new_row.append(matrix[i][j])
+    transposed.append(new_row)
 
-clean_text2 = ""
-for char in second_text:
-    if char.isalpha():
-        clean_text2 += char.lower()
+print("\nТранспонированная:")
+for row in transposed:
+    print(row)
 
-# Сортируем буквы (sorted превращает строку в список и сортирует)
-sorted_text1 = sorted(clean_text1)
-sorted_text2 = sorted(clean_text2)
+if R == C:
+    print("Симметрична?", matrix == transposed) # Сравнение списков в Python работает само!
 
-if sorted_text1 == sorted_text2:
-    print("4. Строки являются анаграммами.")
-else:
-    print("4. Строки НЕ являются анаграммами.")
-#извлекаем текст из ковычек
-quotes_list = []
-inside_quotes = False # Флаг: мы внутри кавычек или нет
-current_quote = ""
+# 6. Седловые точки
+print("\nСедловые точки:")
+for i in range(R):
+    for j in range(C):
+        if matrix[i][j] == min(matrix[i]) and matrix[i][j] == max([matrix[k][j] for k in range(R)]):
+            print(matrix[i][j])
 
-for char in text:
-    # Если встретили открывающую кавычку (обычную или «)
-    if (char == '"' or char == '«') and inside_quotes == False:
-        inside_quotes = True
-        current_quote = "" # Начинаем собирать текст заново
-    # Если встретили закрывающую кавычку (обычную или »)
-    elif (char == '"' or char == '»') and inside_quotes == True:
-        inside_quotes = False
-        quotes_list.append(current_quote)
-    # Если мы внутри кавычек, добавляем символ к тексту
-    elif inside_quotes == True:
-        current_quote += char
+# 7. Уникальные элементы
+unique = []
+for row in matrix:
+    for x in row:
+        if x not in unique:
+            unique.append(x)
+unique.sort()
+print("\nУникальные:", unique)
 
-print(f"5. Текст в кавычках: {quotes_list}")
-#ищем быков и коров
-print("\n--- 6. Игра 'Быки и коровы' ---")
-secret = input("Введите первое слово: ")
-guess = input("Введите второе слово: ")
-
-if len(secret) != len(guess):
-    print("Ошибка: слова должны быть одинаковой длины!")
-else:
-    secret = secret.lower()
-    guess = guess.lower()
-    
-    bulls = 0
-    cows = 0
-    
-    # Превращаем строки в списки, чтобы можно было "вычеркивать" буквы
-    secret_list = list(secret)
-    guess_list = list(guess)
-    
-    # 1. Ищем БЫКОВ (буква на своем месте)
-    for i in range(len(secret_list)):
-        if secret_list[i] == guess_list[i]:
-            bulls += 1
-            # Заменяем найденные буквы на '_', чтобы не считать их снова
-            secret_list[i] = '_'
-            guess_list[i] = '_'
-            
-    # 2. Ищем КОРОВ (буква есть, но не на своем месте)
-    for i in range(len(guess_list)):
-        if guess_list[i] != '_': # Если эта буква не была быком
-            if guess_list[i] in secret_list:
-                cows += 1
-                # Находим индекс этой буквы в секретном слове и зачеркиваем её
-                index_in_secret = secret_list.index(guess_list[i])
-                secret_list[index_in_secret] = '_'
-                
-    print(f"Быки={bulls}, Коровы={cows}")
+# 8. След матрицы
+if R == C:
+    trace = 0
+    for i in range(R):
+        trace += matrix[i][i]
+    print("След:", trace)
